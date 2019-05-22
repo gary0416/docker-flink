@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 ###############################################################################
 #  Licensed to the Apache Software Foundation (ASF) under one
@@ -21,6 +21,15 @@
 # If unspecified, the hostname of the container is taken as the JobManager address
 JOB_MANAGER_RPC_ADDRESS=${JOB_MANAGER_RPC_ADDRESS:-$(hostname -f)}
 CONF_FILE="${FLINK_HOME}/conf/flink-conf.yaml"
+
+if [[ $JOB_MANAGER_RPC_ADDRESS =~ .$ ]]; then
+    # k8s里获取的是xxx.cluster.local. 而flink源码却Preconditions.checkArgument(!host.endsWith("."));
+    echo "$JOB_MANAGER_RPC_ADDRESS is endswith . and against with org/apache/flink/util/NetUtils.java:147"
+    JOB_MANAGER_RPC_ADDRESS=${JOB_MANAGER_RPC_ADDRESS%?}
+    echo "JOB_MANAGER_RPC_ADDRESS now is $JOB_MANAGER_RPC_ADDRESS"
+else
+    echo "JOB_MANAGER_RPC_ADDRESS is $JOB_MANAGER_RPC_ADDRESS"
+fi
 
 drop_privs_cmd() {
     if [ $(id -u) != 0 ]; then
