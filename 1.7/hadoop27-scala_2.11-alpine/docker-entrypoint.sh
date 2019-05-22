@@ -36,7 +36,7 @@ drop_privs_cmd() {
 }
 
 if [ "$1" = "help" ]; then
-    echo "Usage: $(basename "$0") (jobmanager|taskmanager|help)"
+    echo "Usage: $(basename "$0") (jobmanager|taskmanager|help|sleep)"
     exit 0
 elif [ "$1" = "jobmanager" ]; then
     shift 1
@@ -94,6 +94,11 @@ elif [ "$1" = "taskmanager" ]; then
 
     echo "config file: " && grep '^[^\n#]' "${CONF_FILE}"
     exec $(drop_privs_cmd) "$FLINK_HOME/bin/taskmanager.sh" start-foreground "$@"
+elif [ "$1" = "sleep" ]; then
+    # for testing
+    shift 1
+    echo "sleep..."
+    sleep 1d
 fi
 
 exec "$@"
