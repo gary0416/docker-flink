@@ -21,14 +21,20 @@
 # If unspecified, the hostname of the container is taken as the JobManager address
 JOB_MANAGER_RPC_ADDRESS=${JOB_MANAGER_RPC_ADDRESS:-$(hostname -f)}
 CONF_FILE="${FLINK_HOME}/conf/flink-conf.yaml"
+CONF_FILE_TEMPLATE="${FLINK_HOME}/conf-template/flink-conf.yaml"
 
 if [[ $JOB_MANAGER_RPC_ADDRESS == *. ]]; then
-    # k8s里获取的是xxx.cluster.local. 而flink源码却Preconditions.checkArgument(!host.endsWith("."));
+    # in k8s, hostname -f is "xxx.cluster.local." but in flink source:Preconditions.checkArgument(!host.endsWith("."))
     echo "$JOB_MANAGER_RPC_ADDRESS is endswith . and against with org/apache/flink/util/NetUtils.java:147"
     JOB_MANAGER_RPC_ADDRESS=${JOB_MANAGER_RPC_ADDRESS%?}
     echo "JOB_MANAGER_RPC_ADDRESS now is $JOB_MANAGER_RPC_ADDRESS"
 else
     echo "JOB_MANAGER_RPC_ADDRESS is $JOB_MANAGER_RPC_ADDRESS"
+fi
+
+# support k8s configMap
+if [ -f "$CONF_FILE_TEMPLATE" ]; then
+  cp $CONF_FILE_TEMPLATE $CONF_FILE
 fi
 
 drop_privs_cmd() {
